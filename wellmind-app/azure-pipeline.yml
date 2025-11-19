@@ -1,0 +1,76 @@
+# Azure DevOps Pipeline - Build
+# Projeto: WellMind API - Java Spring Boot
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  mavenPomFile: 'pom.xml'
+  javaVersion: '17'
+
+stages:
+- stage: Build
+  displayName: 'Build e Testes'
+  jobs:
+  - job: BuildJob
+    displayName: 'Compilar e Testar'
+    steps:
+    
+    # 1. Configurar JDK 17
+    - task: JavaToolInstaller@0
+      displayName: 'Instalar Java 17'
+      inputs:
+        versionSpec: '$(javaVersion)'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
+    
+    # 2. Build com Maven
+    - task: Maven@3
+      displayName: 'Maven Clean Package'
+      inputs:
+        mavenPomFile: '$(mavenPomFile)'
+        goals: 'clean package'
+        options: '-DskipTests=false'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.17'
+        mavenVersionOption: 'Default'
+    
+    # 3. Executar Testes Unitários
+    - task: Maven@3
+      displayName: 'Executar Testes JUnit'
+      inputs:
+        mavenPomFile: '$(mavenPomFile)'
+        goals: 'test'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        codeCoverageToolOption: 'JaCoCo'
+    
+    # 4. Publicar Resultados de Testes
+    - task: PublishTestResults@2
+      displayName: 'Publicar Resultados de Testes'
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        failTaskOnFailedTests: true
+    
+    # 5. Publicar Artefato (JAR)
+    - task: CopyFiles@2
+      displayName: 'Copiar Artefatos'
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)/target'
+        Contents: '*.jar'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publicar Artefato JAR'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'

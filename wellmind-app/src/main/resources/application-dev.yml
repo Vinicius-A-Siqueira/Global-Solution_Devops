@@ -1,0 +1,38 @@
+# ============================================
+# Development Profile - Local
+# ============================================
+
+spring:
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;database=wellmind_dev;encrypt=false;trustServerCertificate=true
+    username: sa
+    password: DevPassword123!
+
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    com.wellmind: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+app:
+  jwt:
+    secret: dev-secret-key-not-for-production-change-me-in-prod
+    expiration: 86400000

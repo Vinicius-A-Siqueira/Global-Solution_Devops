@@ -1,0 +1,105 @@
+# ============================================
+# WellMind API - Azure SQL Database
+# Produção: Azure App Service + Azure SQL
+# ============================================
+
+spring:
+  application:
+    name: wellmind-api
+
+  # ==========================================
+  # Azure SQL Database
+  # ==========================================
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      pool-name: WellMindHikariPool
+
+  # ==========================================
+  # JPA/Hibernate
+  # ==========================================
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+        format_sql: true
+
+  # ==========================================
+  # Cache (Simple - sem Redis)
+  # ==========================================
+  cache:
+    type: simple
+
+# ============================================
+# Server
+# ============================================
+server:
+  port: ${SERVER_PORT:8080}
+  compression:
+    enabled: true
+    min-response-size: 1024
+  error:
+    include-message: always
+    include-stacktrace: never
+
+# ============================================
+# Logging
+# ============================================
+logging:
+  level:
+    root: WARN
+    com.wellmind: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate: WARN
+
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+  file:
+    name: ${LOG_FILE:/home/LogFiles/Application/wellmind.log}
+    max-size: 50MB
+    max-history: 60
+
+# ============================================
+# JWT
+# ============================================
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION:86400000}
+
+# ============================================
+# Actuator
+# ============================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ============================================
+# Swagger
+# ============================================
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
